@@ -1,0 +1,79 @@
+﻿[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+Server running on port 5000
+node : Error 
+connecting to MongoDB: 
+MongoParseError: 
+options 
+usenewurlparser, 
+useunifiedtopology are 
+not supported
+At line:1 char:1
++ node server.js > 
+server_crash.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Error connect   
+ in...e not support    
+ed:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+    at parseOptions (C:
+\Users\vijay\.gemini\an
+tigravity\scratch\truck
+-monitor\server\node_mo
+dules\mongodb\lib\conne
+ction_string.js:273:15)
+    at new MongoClient 
+(C:\Users\vijay\.gemini
+\antigravity\scratch\tr
+uck-monitor\server\node
+_modules\mongodb\lib\mo
+ngo_client.js:67:61)
+    at NativeConnection
+.createClient (C:\Users
+\vijay\.gemini\antigrav
+ity\scratch\truck-monit
+or\server\node_modules\
+mongoose\lib\drivers\no
+de-mongodb-native\conne
+ction.js:334:14)
+    at NativeConnection
+.openUri (C:\Users\vija
+y\.gemini\antigravity\s
+cratch\truck-monitor\se
+rver\node_modules\mongo
+ose\lib\connection.js:1
+074:34)
+    at 
+Mongoose.connect (C:\Us
+ers\vijay\.gemini\antig
+ravity\scratch\truck-mo
+nitor\server\node_modul
+es\mongoose\lib\mongoos
+e.js:469:15)
+    at 
+Object.<anonymous> (C:\
+Users\vijay\.gemini\ant
+igravity\scratch\truck-
+monitor\server\server.j
+s:14:10)
+    at Module._compile 
+(node:internal/modules/
+cjs/loader:1554:14)
+    at Object..js (node
+:internal/modules/cjs/l
+oader:1706:10)
+    at Module.load (nod
+e:internal/modules/cjs/
+loader:1289:32)
+    at Function._load (
+node:internal/modules/c
+js/loader:1108:12) {
+  errorLabelSet: 
+Set(0) {}
+}
