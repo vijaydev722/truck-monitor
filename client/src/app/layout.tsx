@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "./components/Sidebar";
+import AuthProvider from "./components/AuthProvider";
 
 export default function RootLayout({
   children,
@@ -27,12 +28,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex bg-slate-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex bg-slate-50 min-h-screen`}
       >
-        <Sidebar />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          {children}
-        </main>
+        <AuthProvider>
+          <Sidebar />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ const driverSchema = new mongoose.Schema({
   licenseNumber: { type: String, required: true, unique: true },
   phone: { type: String },
   status: { type: String, enum: ['Active', 'On-Leave'], default: 'Active' },
+  currentLocation: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

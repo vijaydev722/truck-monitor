@@ -23,7 +23,9 @@ const loadingPlacesRouter = require('./routes/loadingPlaces');
 const driversRouter = require('./routes/drivers');
 const shipmentsRouter = require('./routes/shipments');
 const invoicesRouter = require('./routes/invoices');
+const authRouter = require('./routes/auth');
 
+app.use('/api/auth', authRouter);
 app.use('/api/trucks', trucksRouter);
 app.use('/api/clients', clientsRouter);
 app.use('/api/loading-places', loadingPlacesRouter);
