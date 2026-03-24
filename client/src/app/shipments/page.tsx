@@ -8,15 +8,15 @@ type Shipment = {
   client: { _id: string; name: string };
   loadingPlace: { _id: string; name: string };
   deliveryAddress: string;
-  truck?: { _id: string; plateNumber: string };
-  driver?: { _id: string; name: string };
+  truck?: { _id: string; registration_no?: string };
+  driver?: { _id: string; personal_info?: { full_name: string } };
   status: 'Pending' | 'In Transit' | 'Delivered';
   price: number;
   createdAt: string;
 };
 
 // Types for form dropdowns
-type Option = { _id: string; name?: string; plateNumber?: string };
+type Option = { _id: string; name?: string; registration_no?: string; personal_info?: { full_name: string } };
 
 export default function ShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -170,14 +170,14 @@ export default function ShipmentsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">Assign Truck (Optional)</label>
               <select value={truckId} onChange={(e) => setTruckId(e.target.value)} className="w-full border-slate-200 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
                 <option value="">Unassigned</option>
-                {trucks.map(t => <option key={t._id} value={t._id}>{t.plateNumber}</option>)}
+                {trucks.map(t => <option key={t._id} value={t._id}>{t.registration_no}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Assign Driver (Optional)</label>
               <select value={driverId} onChange={(e) => setDriverId(e.target.value)} className="w-full border-slate-200 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
                 <option value="">Unassigned</option>
-                {drivers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+                {drivers.map(d => <option key={d._id} value={d._id}>{d.personal_info?.full_name}</option>)}
               </select>
             </div>
             <div>
@@ -236,10 +236,10 @@ export default function ShipmentsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-slate-700 mb-1">
-                        🚗 {shipment.truck?.plateNumber || <span className="text-slate-400 italic">No Truck</span>}
+                        🚗 {shipment.truck?.registration_no || <span className="text-slate-400 italic">No Truck</span>}
                       </div>
                       <div className="text-sm text-slate-700">
-                        👤 {shipment.driver?.name || <span className="text-slate-400 italic">No Driver</span>}
+                        👤 {shipment.driver?.personal_info?.full_name || <span className="text-slate-400 italic">No Driver</span>}
                       </div>
                     </td>
                     <td className="px-6 py-4">

@@ -14,7 +14,23 @@ router.get('/', async (req, res) => {
 
 // Create a new driver
 router.post('/', async (req, res) => {
-  const driver = new Driver(req.body);
+  // Map flat properties from UI
+  const payload = {
+    personal_info: {
+      full_name: req.body.name || req.body.personal_info?.full_name,
+      phone: req.body.phone || req.body.personal_info?.phone
+    },
+    compliance: {
+      license: {
+        number: req.body.licenseNumber || req.body.compliance?.license?.number
+      }
+    },
+    current_status: {
+      state: req.body.status ? req.body.status.toLowerCase().replace('-', '_') : 'idle'
+    }
+  };
+
+  const driver = new Driver(payload);
   try {
     const newDriver = await driver.save();
     res.status(201).json(newDriver);
@@ -26,7 +42,26 @@ router.post('/', async (req, res) => {
 // Update a driver
 router.patch('/:id', async (req, res) => {
   try {
-    const driver = await Driver.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Map retro fields to nested fields
+    const updates = { ...req.body };
+    if (updates.name) {
+      updates['personal_info.full_name'] = updates.name;
+      delete updates.name;
+    }
+    if (updates.phone) {
+      updates['personal_info.phone'] = updates.phone;
+      delete updates.phone;
+    }
+    if (updates.licenseNumber) {
+      updates['compliance.license.number'] = updates.licenseNumber;
+      delete updates.licenseNumber;
+    }
+    if (updates.status) {
+      updates['current_status.state'] = updates.status.toLowerCase().replace('-', '_');
+      delete updates.status;
+    }
+
+    const driver = await Driver.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
     if (!driver) return res.status(404).json({ message: 'Driver not found' });
     res.json(driver);
   } catch (err) {

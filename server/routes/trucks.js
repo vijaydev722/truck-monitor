@@ -15,9 +15,17 @@ router.get('/', async (req, res) => {
 // Create a new truck
 router.post('/', async (req, res) => {
   const truck = new Truck({
-    plateNumber: req.body.plateNumber,
-    status: req.body.status,
-    location: req.body.location,
+    registration_no: req.body.registration_no || req.body.plateNumber,
+    vin: req.body.vin,
+    model: req.body.model,
+    year: req.body.year,
+    status: req.body.status ? req.body.status.toLowerCase().replace(' ', '_') : 'idle',
+    compliance: req.body.compliance,
+    last_telemetry: req.body.last_telemetry || {
+      location: { type: 'Point', coordinates: [0, 0] }
+    },
+    legal_owner: req.body.legal_owner,
+    tax_slabs: req.body.tax_slabs
   });
 
   try {
@@ -37,12 +45,16 @@ router.patch('/:id', async (req, res) => {
     }
 
     if (req.body.status != null) {
-      truck.status = req.body.status;
+      truck.status = req.body.status.toLowerCase().replace(' ', '_');
+      if (truck.status === 'in_transit') truck.status = 'active'; // Map old to new
     }
+    
+    // Support retro location strings if passed from old UI
     if (req.body.location != null) {
-      truck.location = req.body.location;
+       // if we have a robust UI, we should parse it. For now let's skip.
     }
-    truck.lastUpdated = Date.now();
+    
+    truck.updatedAt = Date.now();
 
     const updatedTruck = await truck.save();
     res.json(updatedTruck);

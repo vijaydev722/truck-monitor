@@ -8,4 +8,7 @@ router.post('/login', authController.loginUser);
 // Seed an initial admin if non-existent
 router.post('/seed-admin', authController.seedAdmin);
 
+// Signup endpoint
+router.post('/signup', authController.signupUser);
+
 module.exports = router;

@@ -4,45 +4,39 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
-  const [role, setRole] = useState<'admin' | 'driver' | 'user'>('admin');
+export default function Signup() {
+  const [role, setRole] = useState<'admin' | 'driver' | 'user'>('user');
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      let location = '';
-      if (role === 'driver') {
-        location = await new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject('Geolocation is not supported by your browser.');
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(
-            (pos) => resolve(`${pos.coords.latitude}, ${pos.coords.longitude}`),
-            () => reject('Location access is mandatory for drivers to login.')
-          );
-        });
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const payload = { role, name, phone, password, licenseNumber };
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, phone, password, location })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
 
-      localStorage.setItem('user', JSON.stringify(data.user));
-      router.push('/');
+      setSuccess('Account created successfully! Redirecting to login...');
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.message || err.toString());
     } finally {
@@ -52,29 +46,29 @@ export default function Login() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-8">
         {/* Header */}
         <div className="pt-10 pb-6 px-8 text-center bg-gradient-to-b from-blue-600/20 to-transparent">
           <div className="w-16 h-16 bg-blue-500 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">FleetPro</h1>
-          <p className="text-slate-300 mt-2 font-medium bg-white/5 py-1 px-4 text-sm rounded-full inline-block border border-white/10">Log in to your account</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Create Account</h1>
+          <p className="text-slate-300 mt-2 font-medium bg-white/5 py-1 px-4 text-sm rounded-full inline-block border border-white/10">Join FleetPro</p>
         </div>
 
         {/* Form Body */}
         <div className="px-8 pb-10">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSignup} className="space-y-6">
             
             {/* Role Switcher */}
             <div className="flex p-1 bg-slate-900/50 rounded-xl space-x-1 border border-white/10 shadow-inner">
-              {['admin', 'driver', 'user'].map((r) => (
+              {['user', 'driver', 'admin'].map((r) => (
                 <button
                   key={r}
                   type="button"
-                  onClick={() => { setRole(r as any); setError(''); }}
+                  onClick={() => { setRole(r as any); setError(''); setSuccess(''); }}
                   className={`flex-1 capitalize py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
                     role === r 
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' 
@@ -94,8 +88,29 @@ export default function Login() {
                 {error}
               </div>
             )}
+            
+            {success && (
+              <div className="bg-green-500/10 border border-green-500/20 text-green-200 p-4 rounded-xl text-sm flex items-start">
+                <svg className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {success}
+              </div>
+            )}
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5 pl-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder-slate-500"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5 pl-1">Mobile Number</label>
                 <input
@@ -117,75 +132,50 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-slate-900/50 border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder-slate-500"
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                   />
                 </div>
               )}
 
               {role === 'driver' && (
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-center text-blue-200 text-sm">
-                  <svg className="w-6 h-6 mr-3 flex-shrink-0 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Your system location will be requested securely during login.</span>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5 pl-1">License Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={licenseNumber}
+                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder-slate-500"
+                    placeholder="Enter your driving license number"
+                  />
                 </div>
               )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!success}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/40 shadow-lg shadow-blue-600/30 flex justify-center items-center mt-6 disabled:opacity-70 disabled:cursor-not-allowed group"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  Sign In
+                  Create Account
                   <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </>
               )}
             </button>
+            
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-400">
-                Don't have an account?{' '}
-                <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-all">
-                  Sign up
+                Already have an account?{' '}
+                <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-all">
+                  Sign in
                 </Link>
               </p>
-            </div>
-            
-            {/* Demo Credentials Section */}
-            <div className="mt-8 pt-6 border-t border-white/10 text-xs text-slate-400 text-left space-y-2">
-              <p className="font-semibold text-slate-300 text-sm mb-3">Demo Credentials:</p>
-              
-              <div className="bg-slate-900/50 p-3 rounded-lg border border-white/5 shadow-inner">
-                <p className="font-medium text-blue-400 mb-1">Admin:</p>
-                <div className="flex justify-between items-center bg-black/20 p-2 rounded mb-1">
-                  <span>Phone: <span className="text-white font-mono">1234567890</span></span>
-                </div>
-                <div className="flex justify-between items-center bg-black/20 p-2 rounded">
-                  <span>Password: <span className="text-white font-mono">admin123</span></span>
-                </div>
-              </div>
-
-              <div className="bg-slate-900/50 p-3 rounded-lg border border-white/5 shadow-inner">
-                <p className="font-medium text-emerald-400 mb-1">Driver:</p>
-                <div className="flex justify-between items-center bg-black/20 p-2 rounded mb-1">
-                  <span>Phone: <span className="text-white font-mono">0987654321</span></span>
-                </div>
-                <div className="text-[10px] text-slate-500 mt-1 italic">Location is determined automatically</div>
-              </div>
-
-              <div className="bg-slate-900/50 p-3 rounded-lg border border-white/5 shadow-inner">
-                <p className="font-medium text-orange-400 mb-1">User (Client):</p>
-                <div className="flex justify-between items-center bg-black/20 p-2 rounded">
-                  <span>Phone: <span className="text-white font-mono">5555555555</span></span>
-                </div>
-              </div>
             </div>
           </form>
         </div>

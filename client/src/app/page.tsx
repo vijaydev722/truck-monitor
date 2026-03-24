@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 
 type Truck = {
   _id: string;
-  plateNumber: string;
-  status: 'In Transit' | 'Idle' | 'Maintenance';
-  location: string;
-  lastUpdated: string;
+  registration_no: string;
+  status: 'active' | 'maintenance' | 'idle' | 'docs_expired';
+  last_telemetry: {
+    location?: { coordinates: [number, number] };
+  };
+  updatedAt?: string;
 };
 
 export default function Home() {
@@ -16,8 +18,8 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false);
   
   // Form state
-  const [plateNumber, setPlateNumber] = useState('');
-  const [status, setStatus] = useState<'In Transit' | 'Idle' | 'Maintenance'>('Idle');
+  const [registrationNo, setRegistrationNo] = useState('');
+  const [status, setStatus] = useState<'active' | 'maintenance' | 'idle' | 'docs_expired'>('idle');
   const [location, setLocation] = useState('');
 
   const fetchTrucks = async () => {
@@ -47,13 +49,13 @@ export default function Home() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trucks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plateNumber, status, location }),
+        body: JSON.stringify({ registration_no: registrationNo, status, location }),
       });
       if (res.ok) {
         setShowForm(false);
-        setPlateNumber('');
+        setRegistrationNo('');
         setLocation('');
-        setStatus('Idle');
+        setStatus('idle');
         fetchTrucks();
       }
     } catch (error) {
@@ -76,9 +78,10 @@ export default function Home() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In Transit': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Idle': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'Maintenance': return 'bg-red-100 text-red-800 border-red-200';
+      case 'active': return 'bg-green-100 text-green-800 border-green-200';
+      case 'idle': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'maintenance': return 'bg-red-100 text-red-800 border-red-200';
+      case 'docs_expired': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -115,11 +118,11 @@ export default function Home() {
             <h2 className="text-xl font-bold mb-4">Add a New Truck</h2>
             <form onSubmit={handleAddTruck} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Plate Number</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Registration No</label>
                 <input 
                   type="text" 
-                  value={plateNumber}
-                  onChange={(e) => setPlateNumber(e.target.value)}
+                  value={registrationNo}
+                  onChange={(e) => setRegistrationNo(e.target.value)}
                   className="w-full border-slate-200 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="e.g. TRK-492"
                   required
@@ -143,9 +146,10 @@ export default function Home() {
                   onChange={(e) => setStatus(e.target.value as any)}
                   className="w-full border-slate-200 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
-                  <option value="Idle">Idle</option>
-                  <option value="In Transit">In Transit</option>
-                  <option value="Maintenance">Maintenance</option>
+                  <option value="idle">Idle</option>
+                  <option value="active">Active</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="docs_expired">Docs Expired</option>
                 </select>
               </div>
               <button 
@@ -169,31 +173,31 @@ export default function Home() {
               <div key={truck._id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Plate</span>
-                    <h3 className="text-2xl font-bold font-mono text-slate-800">{truck.plateNumber}</h3>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reg No</span>
+                    <h3 className="text-2xl font-bold font-mono text-slate-800">{truck.registration_no}</h3>
                   </div>
-                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(truck.status)}`}>
-                    {truck.status}
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border uppercase ${getStatusColor(truck.status)}`}>
+                    {truck.status.replace('_', ' ')}
                   </span>
                 </div>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center text-sm text-slate-600">
                     <svg className="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    {truck.location}
+                    {truck.last_telemetry?.location?.coordinates?.join(', ') || 'GPS Pending'}
                   </div>
                   <div className="flex items-center text-sm text-slate-500">
                     <svg className="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Updated: {new Date(truck.lastUpdated).toLocaleTimeString()}
+                    Updated: {truck.updatedAt ? new Date(truck.updatedAt).toLocaleTimeString() : 'Unknown'}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">
                   <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Quick Update Status</label>
                   <div className="flex gap-2">
-                    <button onClick={() => handleUpdateStatus(truck._id, 'In Transit')} className="flex-1 text-xs py-1.5 rounded-md bg-green-50 text-green-700 hover:bg-green-100 font-medium transition-colors">In Transit</button>
-                    <button onClick={() => handleUpdateStatus(truck._id, 'Idle')} className="flex-1 text-xs py-1.5 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100 font-medium transition-colors">Idle</button>
-                    <button onClick={() => handleUpdateStatus(truck._id, 'Maintenance')} className="flex-1 text-xs py-1.5 rounded-md bg-red-50 text-red-700 hover:bg-red-100 font-medium transition-colors">Maintenance</button>
+                    <button onClick={() => handleUpdateStatus(truck._id, 'active')} className="flex-1 text-xs py-1.5 rounded-md bg-green-50 text-green-700 hover:bg-green-100 font-medium transition-colors">Active</button>
+                    <button onClick={() => handleUpdateStatus(truck._id, 'idle')} className="flex-1 text-xs py-1.5 rounded-md bg-gray-50 text-gray-700 hover:bg-gray-100 font-medium transition-colors">Idle</button>
+                    <button onClick={() => handleUpdateStatus(truck._id, 'maintenance')} className="flex-1 text-xs py-1.5 rounded-md bg-red-50 text-red-700 hover:bg-red-100 font-medium transition-colors">Maintenance</button>
                   </div>
                 </div>
               </div>

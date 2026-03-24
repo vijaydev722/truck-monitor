@@ -19,12 +19,18 @@ export const metadata: Metadata = {
 
 import Sidebar from "./components/Sidebar";
 import AuthProvider from "./components/AuthProvider";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const router = useRouter();
+  useEffect(()=>{
+    router.push('/login')
+  },[])
   return (
     <html lang="en">
       <body
